@@ -26,7 +26,7 @@ jobs:
           --health-retries=5
 
     steps:
-      # 1️⃣ Checkout repository
+      # 1️⃣ Checkout code
       - name: Checkout code
         uses: actions/checkout@v5
 
@@ -36,7 +36,7 @@ jobs:
         with:
           python-version: '3.10'
 
-      # 3️⃣ Install dependencies
+      # 3️⃣ Install dependencies (no venv)
       - name: Install dependencies
         run: |
           pip install --upgrade pip
@@ -48,11 +48,11 @@ jobs:
         run: |
           pytest tests/ --disable-warnings -v
 
-      # 5️⃣ Run Gitleaks scan (fixed - no args warning)
+      # 5️⃣ Run Gitleaks scan
       - name: Run Gitleaks scan
         uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: detect --source . --no-banner --exit-code 1
 
       # 6️⃣ Run Trivy file system scan
       - name: Run Trivy FS scan
@@ -62,44 +62,37 @@ jobs:
           ignore-unfixed: true
           severity: 'CRITICAL,HIGH'
 
-      # 7️⃣ Run Checkov scan for IaC security
+      # 7️⃣ Run Checkov scan
       - name: Run Checkov scan
         run: |
           checkov -d . --skip-path venv
 
-      # 8️⃣ Start full environment (App + DB + SonarQube)
+      # 8️⃣ Start services with Docker Compose (App + DB + SonarQube)
       - name: Run Docker Compose
         run: |
           docker compose up -d
           docker ps
-          echo "⏳ Waiting for services to be ready..."
-          sleep 40
+          sleep 30  # Wait for services to stabilize
 
-      # 9️⃣ Verify running containers
-      - name: Verify running containers
-        run: |
-          docker ps -a
-
-      # 🔟 Run SonarQube analysis
+      # 9️⃣ SonarQube analysis
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: http://localhost:9000
 
-      # 11️⃣ Build Docker image
+      # 🔟 Build Docker image
       - name: Build Docker image
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/secure-flask-app:latest .
 
-      # 12️⃣ Log in to Docker Hub
-      - name: Docker login
+      # 11️⃣ Push Docker image to Docker Hub
+      - name: Push to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # 13️⃣ Push image to Docker Hub
-      - name: Push Docker image
+      - name: Push image
         run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/secure-flask-app:latest
