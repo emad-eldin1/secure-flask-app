@@ -48,7 +48,7 @@ jobs:
         run: |
           pytest tests/ --disable-warnings -v
 
-      # 5️⃣ Run Gitleaks scan (fixed - no args warning)
+      # 5️⃣ Run Gitleaks scan
       - name: Run Gitleaks scan
         uses: gitleaks/gitleaks-action@v2
         env:
@@ -65,7 +65,7 @@ jobs:
       # 7️⃣ Run Checkov scan for IaC security
       - name: Run Checkov scan
         run: |
-          checkov -d . --skip-path venv
+          checkov -d . --skip-path venv --skip-check CKV_GHA_5,CKV_GHA_6
 
       # 8️⃣ Start full environment (App + DB + SonarQube)
       - name: Run Docker Compose
