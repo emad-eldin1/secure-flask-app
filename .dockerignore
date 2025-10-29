@@ -1,0 +1,45 @@
+# Prevent sending unnecessary files to Docker daemon
+.git
+.gitignore
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+*.log
+*.gz
+*.zip
+*.tar
+*.bak
+*.swp
+*.tmp
+*.old
+*.egg-info/
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# System and OS files
+.DS_Store
+Thumbs.db
+
+# Node and frontend stuff (if any)
+node_modules/
+dist/
+build/
+
+# Test caches
+.pytest_cache/
+.coverage
+htmlcov/
+
