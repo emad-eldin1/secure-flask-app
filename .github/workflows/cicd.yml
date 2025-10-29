@@ -30,7 +30,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      # 2️⃣ Setup Python
+      # 2️⃣ Set up Python
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
@@ -47,6 +47,7 @@ jobs:
       # 4️⃣ Run unit tests
       - name: Run tests
         run: |
+          source venv/bin/activate
           pytest tests/ --disable-warnings -v
 
       # 5️⃣ Run Gitleaks scan
@@ -66,21 +67,29 @@ jobs:
       # 7️⃣ Run Checkov scan
       - name: Run Checkov scan
         run: |
+          source venv/bin/activate
           checkov -d . --skip-path venv
 
-      # 8️⃣ SonarQube analysis
+      # 8️⃣ Start services with Docker Compose (App + DB + SonarQube)
+      - name: Run Docker Compose
+        run: |
+          docker compose up -d
+          docker ps
+          sleep 30  # Wait for services to stabilize
+
+      # 9️⃣ SonarQube analysis
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: http://localhost:9000
 
-      # 9️⃣ Build Docker image
+      # 🔟 Build Docker image
       - name: Build Docker image
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/secure-flask-app:latest .
 
-      # 🔟 Push Docker image to Docker Hub
+      # 11️⃣ Push Docker image to Docker Hub
       - name: Push to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -90,5 +99,3 @@ jobs:
       - name: Push image
         run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/secure-flask-app:latest
-
-
