@@ -1,0 +1,22 @@
+[
+ {
+  "Description": "Generic API Key",
+  "StartLine": 46,
+  "EndLine": 47,
+  "StartColumn": 17,
+  "EndColumn": 1,
+  "Match": "Key = win32api.RegEnumKey",
+  "Secret": "win32api.RegEnumKey",
+  "File": "new-project/simple-registration-postgresql/venv/lib/python3.12/site-packages/setuptools/_distutils/msvccompiler.py",
+  "SymlinkFile": "",
+  "Commit": "8501dd90c7b8af0f29fd6fc0436f294e15c3df50",
+  "Entropy": 3.932138,
+  "Author": "emad-eldin1",
+  "Email": "emadeldin591970@gmail.com",
+  "Date": "2024-07-29T13:23:56Z",
+  "Message": "postgresql",
+  "Tags": [],
+  "RuleID": "generic-api-key",
+  "Fingerprint": "8501dd90c7b8af0f29fd6fc0436f294e15c3df50:new-project/simple-registration-postgresql/venv/lib/python3.12/site-packages/setuptools/_distutils/msvccompiler.py:generic-api-key:46"
+ }
+]
