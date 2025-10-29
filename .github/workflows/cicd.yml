@@ -30,12 +30,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      # 2️⃣ Set up Docker Compose
-      - name: Install Docker Compose
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y docker-compose-plugin
-          docker compose version
+      # 2️⃣ Set up Docker (includes Docker Compose)
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Verify Docker Compose installation
+        run: docker compose version
 
       # 3️⃣ Set up Python
       - name: Set up Python
@@ -52,8 +52,7 @@ jobs:
 
       # 5️⃣ Run unit tests
       - name: Run unit tests
-        run: |
-          pytest tests/ --disable-warnings -v
+        run: pytest tests/ --disable-warnings -v
 
       # 6️⃣ Gitleaks - Secret detection
       - name: Run Gitleaks scan
@@ -71,10 +70,9 @@ jobs:
 
       # 8️⃣ Checkov - IaC security scan
       - name: Run Checkov scan
-        run: |
-          checkov -d . --skip-path venv --skip-framework github_actions
+        run: checkov -d . --skip-path venv --skip-framework github_actions
 
-      # 9️⃣ Start the Docker Compose stack (Flask, DB, SonarQube)
+      # 9️⃣ Start the Docker Compose stack (Flask + DB + SonarQube)
       - name: Start Docker Compose stack
         run: |
           docker compose up -d
@@ -82,11 +80,12 @@ jobs:
           sleep 60
           docker ps -a
 
-      # 🔟 Verify that containers are healthy
-      - name: Check running containers
+      # 🔟 Verify container logs
+      - name: Check container logs
         run: |
-          echo "🔍 Checking container logs for SonarQube and Flask app..."
+          echo "🔍 SonarQube logs:"
           docker logs $(docker ps -q --filter "name=sonarqube") || true
+          echo "🔍 Flask app logs:"
           docker logs $(docker ps -q --filter "name=flask") || true
 
       # 11️⃣ SonarQube analysis
@@ -99,8 +98,7 @@ jobs:
 
       # 12️⃣ Build Docker image
       - name: Build Docker image
-        run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/secure-flask-app:latest .
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/secure-flask-app:latest .
 
       # 13️⃣ Log in to Docker Hub
       - name: Docker Hub login
@@ -111,5 +109,4 @@ jobs:
 
       # 14️⃣ Push Docker image
       - name: Push Docker image
-        run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/secure-flask-app:latest
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/secure-flask-app:latest
